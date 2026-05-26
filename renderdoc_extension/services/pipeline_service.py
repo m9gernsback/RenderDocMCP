@@ -332,6 +332,57 @@ class PipelineService:
 
         return cbuffers
 
+    def get_shader_bytecode(self, event_id, stage):
+        """Get raw shader bytecode for a specific stage"""
+        if not self.ctx.IsCaptureLoaded():
+            raise ValueError("No capture loaded")
+
+        result = {"data": None, "error": None}
+
+        def callback(controller):
+            controller.SetFrameEvent(event_id, True)
+
+            pipe = controller.GetPipelineState()
+            stage_enum = Parsers.parse_stage(stage)
+
+            shader = pipe.GetShader(stage_enum)
+            if shader == rd.ResourceId.Null():
+                result["error"] = "No %s shader bound" % stage
+                return
+
+            entry = pipe.GetShaderEntryPoint(stage_enum)
+            reflection = pipe.GetShaderReflection(stage_enum)
+
+            if not reflection:
+                result["error"] = "No shader reflection available for %s" % stage
+                return
+
+            # Get raw shader bytecode
+            try:
+                raw_bytes = reflection.rawBytes
+                if not raw_bytes or len(raw_bytes) == 0:
+                    result["error"] = "No bytecode available for %s shader" % stage
+                    return
+
+                import base64
+                result["data"] = {
+                    "resource_id": str(shader),
+                    "entry_point": entry,
+                    "stage": stage,
+                    "data_length": len(raw_bytes),
+                    "content_base64": base64.b64encode(bytes(raw_bytes)).decode("ascii"),
+                }
+            except AttributeError:
+                result["error"] = "rawBytes not available in this RenderDoc version"
+            except Exception as e:
+                result["error"] = "Failed to get shader bytecode: %s" % str(e)
+
+        self._invoke(callback)
+
+        if result["error"]:
+            raise ValueError(result["error"])
+        return result["data"]
+
     def _get_resource_details(self, controller, resource_id):
         """Get details about a resource (texture or buffer)"""
         details = {}

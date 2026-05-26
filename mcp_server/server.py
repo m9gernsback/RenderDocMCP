@@ -197,6 +197,25 @@ def get_shader_info(
 
 
 @mcp.tool
+def get_shader_bytecode(
+    event_id: int,
+    stage: Literal["vertex", "hull", "domain", "geometry", "pixel", "compute"],
+) -> dict:
+    """
+    Get raw shader bytecode for a specific stage at a given event.
+
+    Args:
+        event_id: The event ID to inspect the shader at
+        stage: The shader stage (vertex, hull, domain, geometry, pixel, compute)
+
+    Returns the raw shader binary (SPIR-V for Vulkan, DXBC for D3D11, DXIL for D3D12)
+    as base64-encoded bytes, along with metadata including resource_id, entry_point,
+    stage, and data_length.
+    """
+    return bridge.call("get_shader_bytecode", {"event_id": event_id, "stage": stage})
+
+
+@mcp.tool
 def get_buffer_contents(
     resource_id: str,
     offset: int = 0,
