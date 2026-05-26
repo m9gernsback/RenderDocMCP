@@ -128,6 +128,49 @@ get_action_timings(marker_filter="Camera.Render", exclude_markers=["GUI.Repaint"
 - RenderDoc拡張機能はPython 3.6標準ライブラリのみ使用
 - ReplayControllerへのアクセスは`BlockInvoke`経由で行う
 
+## WSL Setup (Claude Code on WSL + RenderDoc on Windows)
+
+When running Claude Code on WSL with RenderDoc on Windows, the MCP server must be launched using **Windows Python** so that both the MCP server and RenderDoc extension share the same `%TEMP%` path for file-based IPC.
+
+```
+Claude Code (WSL) ──stdio──→ python.exe (Windows) ──file IPC──→ RenderDoc (Windows)
+```
+
+### Prerequisites
+
+1. **Conda environment** with dependencies:
+   ```powershell
+   conda activate RenderDocMCPPy
+   cd E:\GitHub\RenderDocMCP
+   pip install -e .
+   ```
+
+2. **RenderDoc extension installed**:
+   ```powershell
+   python scripts/install_extension.py
+   ```
+
+### MCP Configuration (`.claude/mcp.json`)
+
+```json
+{
+  "mcpServers": {
+    "renderdoc": {
+      "command": "/mnt/c/Users/<username>/anaconda3/envs/RenderDocMCPPy/python.exe",
+      "args": ["-m", "mcp_server.server"],
+      "cwd": "E:\\GitHub\\RenderDocMCP"
+    }
+  }
+}
+```
+
+**Key point**: Using `python.exe` (Windows Python) ensures `tempfile.gettempdir()` resolves to the Windows `%TEMP%` path, matching the RenderDoc extension's IPC directory. No path translation between WSL and Windows is needed.
+
+### Launch Steps
+
+1. Open RenderDoc and enable the extension in **Tools > Manage Extensions > RenderDoc MCP Bridge > Load** (check "Always Load" for auto-load on startup)
+2. Run `/mcp` in Claude Code or restart the session
+
 ## 参考リンク
 
 - [FastMCP](https://github.com/jlowin/fastmcp)
