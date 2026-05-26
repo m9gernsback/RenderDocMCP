@@ -332,8 +332,8 @@ class PipelineService:
 
         return cbuffers
 
-    def get_shader_bytecode(self, event_id, stage):
-        """Get raw shader bytecode for a specific stage"""
+    def get_shader_bytecode(self, event_id, stage, output_path):
+        """Get raw shader bytecode and write to file"""
         if not self.ctx.IsCaptureLoaded():
             raise ValueError("No capture loaded")
 
@@ -364,13 +364,16 @@ class PipelineService:
                     result["error"] = "No bytecode available for %s shader" % stage
                     return
 
-                import base64
+                # Write binary to file
+                with open(output_path, "wb") as f:
+                    f.write(bytes(raw_bytes))
+
                 result["data"] = {
                     "resource_id": str(shader),
                     "entry_point": entry,
                     "stage": stage,
                     "data_length": len(raw_bytes),
-                    "content_base64": base64.b64encode(bytes(raw_bytes)).decode("ascii"),
+                    "output_path": output_path,
                 }
             except AttributeError:
                 result["error"] = "rawBytes not available in this RenderDoc version"

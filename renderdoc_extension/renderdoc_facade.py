@@ -132,9 +132,9 @@ class RenderDocFacade:
         """Get shader information for a specific stage"""
         return self._pipeline.get_shader_info(event_id, stage)
 
-    def get_shader_bytecode(self, event_id, stage):
-        """Get raw shader bytecode for a specific stage"""
-        return self._pipeline.get_shader_bytecode(event_id, stage)
+    def get_shader_bytecode(self, event_id, stage, output_path):
+        """Get raw shader bytecode and write to file"""
+        return self._pipeline.get_shader_bytecode(event_id, stage, output_path)
 
     def get_pipeline_state(self, event_id):
         """Get full pipeline state at an event"""

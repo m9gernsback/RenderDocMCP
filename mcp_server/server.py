@@ -200,19 +200,24 @@ def get_shader_info(
 def get_shader_bytecode(
     event_id: int,
     stage: Literal["vertex", "hull", "domain", "geometry", "pixel", "compute"],
+    output_path: str,
 ) -> dict:
     """
-    Get raw shader bytecode for a specific stage at a given event.
+    Get raw shader bytecode and write it to a file.
 
     Args:
         event_id: The event ID to inspect the shader at
         stage: The shader stage (vertex, hull, domain, geometry, pixel, compute)
+        output_path: File path to write the shader binary (e.g. "D:\\temp\\EID2607.fs.spv")
 
-    Returns the raw shader binary (SPIR-V for Vulkan, DXBC for D3D11, DXIL for D3D12)
-    as base64-encoded bytes, along with metadata including resource_id, entry_point,
-    stage, and data_length.
+    Writes the raw shader binary to output_path (SPIR-V for Vulkan, DXBC for D3D11,
+    DXIL for D3D12). Returns metadata including resource_id, entry_point, stage,
+    data_length, and the output_path.
     """
-    return bridge.call("get_shader_bytecode", {"event_id": event_id, "stage": stage})
+    return bridge.call(
+        "get_shader_bytecode",
+        {"event_id": event_id, "stage": stage, "output_path": output_path},
+    )
 
 
 @mcp.tool

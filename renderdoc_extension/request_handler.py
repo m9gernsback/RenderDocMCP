@@ -141,11 +141,14 @@ class RequestHandler:
         """Handle get_shader_bytecode request"""
         event_id = params.get("event_id")
         stage = params.get("stage")
+        output_path = params.get("output_path")
         if event_id is None:
             raise ValueError("event_id is required")
         if stage is None:
             raise ValueError("stage is required")
-        return self.facade.get_shader_bytecode(int(event_id), stage)
+        if output_path is None:
+            raise ValueError("output_path is required")
+        return self.facade.get_shader_bytecode(int(event_id), stage, output_path)
 
     def _handle_get_buffer_contents(self, params):
         """Handle get_buffer_contents request"""
